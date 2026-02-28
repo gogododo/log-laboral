@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Log Laboral</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0c0c0c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Log Laboral">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0c0c0c;
+      --surface: #141414;
+      --border:  #202020;
+      --border2: #2c2c2c;
+      --text:    #e8e8e8;
+      --text2:   #888;
+      --text3:   #3a3a3a;
+      --accent:  #7c6ff7;
+      --green:   #4ade80;
+      --red:     #ef4444;
+      --c1: #7c6ff7;
+      --c2: #34d399;
+      --c3: #f472b6;
+      --c4: #fb923c;
+      --c5: #60a5fa;
+      --c6: #fbbf24;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 600px;
+      margin: 0 auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 600px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 8px 16px;
+      background: none; border: none;
+      border-top: 2px solid transparent;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 11px; font-weight: 600; font-family: inherit;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      transition: color 0.2s, border-color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+
+    .tab svg {
+      width: 22px; height: 22px;
+      stroke: currentColor; stroke-width: 1.6;
+      fill: none; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .tab.active { color: var(--accent); border-top-color: var(--accent); }
+
+    /* ── Screens ── */
+    .screen { display: none; padding: 28px 16px 100px; }
+    .screen.active { display: block; }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 24px; }
+
+    .page-header .label {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.18em; color: var(--text3);
+      font-weight: 700; margin-bottom: 5px;
+    }
+
+    .page-header .title {
+      font-size: 22px; font-weight: 300;
+      color: var(--text); letter-spacing: -0.01em;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Active work card ── */
+    .card-active {
+      border-color: rgba(74,222,128,0.2);
+      background: rgba(74,222,128,0.03);
+    }
+
+    .active-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .active-status-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.14em; font-weight: 700; color: var(--green);
+    }
+
+    .active-since {
+      margin-left: auto;
+      font-size: 11px; color: var(--text2);
+    }
+
+    .active-desc {
+      font-size: 16px; color: var(--text);
+      line-height: 1.35; margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .active-cat-row {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .active-elapsed-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 10px 0; margin-bottom: 14px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .elapsed-label {
+      font-size: 12px; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    .elapsed-value {
+      font-size: 20px; font-weight: 600;
+      color: var(--green);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Stopped bar ── */
+    .work-stopped-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 0; margin-bottom: 12px;
+    }
+
+    .stopped-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--text3); flex-shrink: 0;
+    }
+
+    .stopped-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.14em; font-weight: 700; color: var(--text3);
+    }
+
+    /* ── Next activity label ── */
+    .next-label {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.16em; font-weight: 700; color: var(--text3);
+      margin-bottom: 10px;
+    }
+
+    /* ── Inputs ── */
+    input[type=text], select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px; font-family: inherit;
+      padding: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none; -webkit-appearance: none;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    input[type=text]:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--text3); }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px; cursor: pointer;
+    }
+
+    select option { background: #1a1a1a; }
+    .input-error { border-color: var(--red) !important; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      width: 100%;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 10px;
+      padding: 15px; font-size: 16px; font-weight: 500; font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 2px; min-height: 52px;
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-success { background: #16a34a !important; }
+
+    .btn-stop {
+      width: 100%;
+      background: transparent; color: var(--red);
+      border: 1px solid rgba(239,68,68,0.35);
+      border-radius: 10px;
+      padding: 14px; font-size: 15px; font-weight: 500; font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      min-height: 50px;
+    }
+
+    .btn-stop:active { background: rgba(239,68,68,0.07); transform: scale(0.98); }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.18em; color: var(--text3);
+      font-weight: 700; margin: 16px 0 6px;
+    }
+
+    /* ── Log list ── */
+    .log-empty {
+      text-align: center; padding: 40px 0;
+      color: var(--text3); font-size: 14px; line-height: 1.7;
+    }
+
+    .log-item {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 0 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+
+    .log-item:last-child { border-bottom: none; }
+
+    .log-time {
+      font-size: 12px; color: var(--text3);
+      font-variant-numeric: tabular-nums; padding-top: 2px;
+    }
+
+    .log-desc {
+      font-size: 15px; color: var(--text);
+      margin-bottom: 5px; line-height: 1.35; word-break: break-word;
+    }
+
+    .log-tags {
+      display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    }
+
+    .tag-cat {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 4px; opacity: 0.9;
+    }
+
+    .cat-fullname { font-size: 11px; color: var(--text2); }
+
+    .log-dur {
+      font-size: 13px; color: var(--text3);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap; padding-top: 2px;
+    }
+
+    .log-dur.active-now {
+      font-size: 10px; color: var(--green);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      font-weight: 700; padding-top: 4px;
+    }
+
+    /* ── Category badge colors ── */
+    .cat-1 { background: rgba(124,111,247,.18); color: var(--c1); }
+    .cat-2 { background: rgba(52,211,153,.15);  color: var(--c2); }
+    .cat-3 { background: rgba(244,114,182,.15); color: var(--c3); }
+    .cat-4 { background: rgba(251,146,60,.15);  color: var(--c4); }
+    .cat-5 { background: rgba(96,165,250,.15);  color: var(--c5); }
+    .cat-6 { background: rgba(251,191,36,.15);  color: var(--c6); }
+
+    /* ── Summary ── */
+    .sum-section {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.16em; color: var(--text3);
+      font-weight: 700; margin: 0 0 14px;
+    }
+
+    .sum-table {
+      width: 100%; border-collapse: collapse; margin-bottom: 6px;
+    }
+
+    .sum-table th {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text3);
+      font-weight: 700; padding: 6px 5px 12px;
+      text-align: right; border-bottom: 1px solid var(--border2);
+      white-space: nowrap;
+    }
+
+    .sum-table th:first-child { text-align: left; padding-left: 0; }
+
+    .sum-table td {
+      padding: 10px 5px; font-size: 13px; color: var(--text2);
+      border-bottom: 1px solid var(--border);
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+
+    .sum-table td:not(:first-child) { white-space: nowrap; width: 1px; }
+    .sum-table td:first-child { text-align: left; padding-left: 0; }
+    .sum-table td.zero { color: var(--text3); }
+
+    .cat-name {
+      display: flex; align-items: flex-start; gap: 8px;
+      color: var(--text); font-size: 13px; line-height: 1.3;
+    }
+
+    .cat-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════ SCREEN: REGISTRO ════════ -->
+<div id="screen-log" class="screen active">
+
+  <div class="page-header">
+    <div class="label">Log Laboral</div>
+    <div class="title" id="today-label"></div>
+  </div>
+
+  <!-- Estado del trabajo (activo / detenido) + card activa -->
+  <div id="work-state-area"></div>
+
+  <!-- Formulario de registro -->
+  <div class="card" id="form-card">
+    <input type="text" id="inp-desc" placeholder="¿Qué vas a hacer?" maxlength="140" autocomplete="off">
+    <select id="inp-cat">
+      <option value="" disabled selected>Categoría</option>
+    </select>
+    <button class="btn-primary" id="btn-reg" onclick="handleRegister()">▶&nbsp;&nbsp;Iniciar actividad</button>
+  </div>
+
+  <div class="section-label">Hoy</div>
+  <div id="log-list"></div>
+
+</div>
+
+<!-- ════════ SCREEN: RESUMEN ════════ -->
+<div id="screen-summary" class="screen">
+
+  <div class="page-header">
+    <div class="label">Distribución de tiempo</div>
+    <div class="title">Resumen</div>
+  </div>
+
+  <div class="sum-section">Por categoría</div>
+  <table class="sum-table">
+    <thead>
+      <tr>
+        <th>Categoría</th>
+        <th>Hoy</th>
+        <th>7 días</th>
+        <th>30 días</th>
+      </tr>
+    </thead>
+    <tbody id="summary-cats"></tbody>
+  </table>
+
+</div>
+
+<!-- ════════ NAV ════════ -->
+<nav>
+  <button class="tab active" onclick="switchTab('log', this)">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
+    </svg>
+    Registro
+  </button>
+  <button class="tab" onclick="switchTab('summary', this)">
+    <svg viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M9 21V9"/>
+    </svg>
+    Resumen
+  </button>
+</nav>
+
+<script>
+// ── Categorías ─────────────────────────────────────────────────────────────
+const CATS = [
+  'Ingeniería / Construcción',
+  'Diseño y Definición de Solución',
+  'Gestión y Coordinación',
+  'Calidad y Validación',
+  'Relación y Alineación con Cliente',
+  'Mejora y Capitalización Interna'
+];
+
+const CAT_META = {
+  'Ingeniería / Construcción':         { dot: '#7c6ff7', cls: 'cat-1', lbl: 'ING' },
+  'Diseño y Definición de Solución':   { dot: '#34d399', cls: 'cat-2', lbl: 'DIS' },
+  'Gestión y Coordinación':            { dot: '#f472b6', cls: 'cat-3', lbl: 'GES' },
+  'Calidad y Validación':              { dot: '#fb923c', cls: 'cat-4', lbl: 'CAL' },
+  'Relación y Alineación con Cliente': { dot: '#60a5fa', cls: 'cat-5', lbl: 'CLI' },
+  'Mejora y Capitalización Interna':   { dot: '#fbbf24', cls: 'cat-6', lbl: 'MEJ' }
+};
+
+const DAYS   = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio',
+                'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+// ── Storage ────────────────────────────────────────────────────────────────
+function loadEntries() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('dailyLog') || '[]');
+    // Migración de formato antiguo: entradas sin durFinal se marcan como finalizadas
+    return raw.map(e => ({
+      ...e,
+      dur:      typeof e.dur === 'number' ? e.dur : 0,
+      durFinal: e.durFinal !== undefined  ? e.durFinal : true
+    }));
+  } catch { return []; }
+}
+
+function saveEntries(arr) {
+  localStorage.setItem('dailyLog', JSON.stringify(arr));
+}
+
+// ── Estado del trabajo ─────────────────────────────────────────────────────
+function isWorkActive() {
+  if (localStorage.getItem('workActive') !== 'true') return false;
+  // Sanity check: debe existir una entrada no finalizada de hoy
+  const today = dateStr(new Date());
+  const ok = loadEntries().some(e => e.date === today && !e.durFinal);
+  if (!ok) { localStorage.setItem('workActive', 'false'); return false; }
+  return true;
+}
+
+function setWorkActive(val) {
+  localStorage.setItem('workActive', val ? 'true' : 'false');
+}
+
+// ── Helpers de fecha / tiempo ──────────────────────────────────────────────
+function dateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit', hour12:false });
+}
+
+function fmtDur(h) {
+  if (h <= 0) return '—';
+  const hrs = Math.floor(h);
+  const min = Math.round((h - hrs) * 60);
+  if (hrs === 0) return `${min}m`;
+  if (min === 0) return `${hrs}h`;
+  return `${hrs}h ${min}m`;
+}
+
+function fmtPct(h, total) {
+  if (total <= 0 || h <= 0) return '—';
+  const p = Math.round(h / total * 100);
+  return p === 0 ? '<1%' : `${p}%`;
+}
+
+function elapsedH(iso) {
+  return (Date.now() - new Date(iso).getTime()) / 3_600_000;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Obtener entrada activa ─────────────────────────────────────────────────
+function getActiveEntry() {
+  const today = dateStr(new Date());
+  const entries = loadEntries();
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i].date === today && !entries[i].durFinal) return entries[i];
+  }
+  return null;
+}
+
+// ── Finalizar entrada activa ───────────────────────────────────────────────
+function finalizeActive(atTime) {
+  const now   = atTime || new Date();
+  const today = dateStr(now);
+  const entries = loadEntries();
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i].date === today && !entries[i].durFinal) {
+      entries[i].dur      = (now.getTime() - new Date(entries[i].ts).getTime()) / 3_600_000;
+      entries[i].durFinal = true;
+      saveEntries(entries);
+      return;
+    }
+  }
+}
+
+// ── Registrar actividad ────────────────────────────────────────────────────
+function handleRegister() {
+  const descEl = document.getElementById('inp-desc');
+  const catEl  = document.getElementById('inp-cat');
+  const desc   = descEl.value.trim();
+  const cat    = catEl.value;
+
+  descEl.classList.remove('input-error');
+  catEl.classList.remove('input-error');
+
+  let ok = true;
+  if (!desc) { descEl.classList.add('input-error'); ok = false; }
+  if (!cat)  { catEl.classList.add('input-error');  ok = false; }
+  if (!ok) return;
+
+  const now = new Date();
+
+  // Si el trabajo estaba activo, finalizar la actividad en curso
+  if (isWorkActive()) finalizeActive(now);
+
+  const entry = {
+    id:       now.getTime().toString(),
+    ts:       now.toISOString(),
+    date:     dateStr(now),
+    desc, cat,
+    dur:      0,
+    durFinal: false
+  };
+
+  const entries = loadEntries();
+  entries.push(entry);
+  saveEntries(entries);
+  setWorkActive(true);
+
+  descEl.value = '';
+  catEl.selectedIndex = 0;
+
+  renderLog();
+
+  // Feedback visual en el botón
+  const btn = document.getElementById('btn-reg');
+  btn.textContent = '✓ Registrado';
+  btn.classList.add('btn-success');
+  setTimeout(() => {
+    btn.textContent = isWorkActive() ? '→  Siguiente actividad' : '▶  Iniciar actividad';
+    btn.classList.remove('btn-success');
+  }, 1200);
+}
+
+// ── Detener trabajo ────────────────────────────────────────────────────────
+function stopWork() {
+  finalizeActive();
+  setWorkActive(false);
+  renderLog();
+}
+
+// ── Render pantalla de registro ────────────────────────────────────────────
+function renderLog() {
+  const active  = isWorkActive();
+  const stateEl = document.getElementById('work-state-area');
+  const descEl  = document.getElementById('inp-desc');
+  const btnReg  = document.getElementById('btn-reg');
+
+  if (active) {
+    const entry   = getActiveEntry();
+    const meta    = entry ? (CAT_META[entry.cat] || { cls:'cat-1', lbl:'?' }) : {};
+    const elapsed = entry ? fmtDur(elapsedH(entry.ts)) : '—';
+
+    stateEl.innerHTML = `
+      <div class="card card-active">
+        <div class="active-header">
+          <span class="pulse-dot"></span>
+          <span class="active-status-label">En trabajo</span>
+          <span class="active-since">desde ${entry ? fmtTime(entry.ts) : '—'}</span>
+        </div>
+        <div class="active-desc">${entry ? escHtml(entry.desc) : ''}</div>
+        <div class="active-cat-row">
+          ${entry ? `<span class="tag-cat ${meta.cls}">${meta.lbl}</span>` : ''}
+          <span class="cat-fullname">${entry ? escHtml(entry.cat) : ''}</span>
+        </div>
+        <div class="active-elapsed-row">
+          <span class="elapsed-label">Tiempo activo</span>
+          <span class="elapsed-value" id="live-timer">${elapsed}</span>
+        </div>
+        <button class="btn-stop" onclick="stopWork()">■&nbsp;&nbsp;Detener trabajo</button>
+      </div>
+      <div class="next-label">Siguiente actividad</div>
+    `;
+
+    descEl.placeholder = '¿Qué harás a continuación?';
+    btnReg.textContent = '→  Siguiente actividad';
+
+  } else {
+    stateEl.innerHTML = `
+      <div class="work-stopped-bar">
+        <span class="stopped-dot"></span>
+        <span class="stopped-label">Trabajo detenido</span>
+      </div>
+    `;
+    descEl.placeholder = '¿Qué vas a hacer?';
+    btnReg.textContent = '▶  Iniciar actividad';
+  }
+
+  // Lista de actividades de hoy
+  const today   = dateStr(new Date());
+  const entries = loadEntries()
+    .filter(e => e.date === today)
+    .sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+  const listEl = document.getElementById('log-list');
+
+  if (entries.length === 0) {
+    listEl.innerHTML = `<div class="log-empty">Sin actividades registradas hoy.<br>Inicia la primera para comenzar.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = entries.map(item => {
+    const meta = CAT_META[item.cat] || { cls:'cat-1', lbl:'?' };
+    const durHTML = !item.durFinal
+      ? `<div class="log-dur active-now">activa</div>`
+      : `<div class="log-dur">${fmtDur(item.dur)}</div>`;
+    return `
+      <div class="log-item">
+        <div class="log-time">${fmtTime(item.ts)}</div>
+        <div>
+          <div class="log-desc">${escHtml(item.desc)}</div>
+          <div class="log-tags">
+            <span class="tag-cat ${meta.cls}">${meta.lbl}</span>
+            <span class="cat-fullname">${escHtml(item.cat)}</span>
+          </div>
+        </div>
+        ${durHTML}
+      </div>`;
+  }).join('');
+}
+
+// ── Render resumen ─────────────────────────────────────────────────────────
+function renderSummary() {
+  const now   = new Date();
+  const today = dateStr(now);
+  const str7  = dateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6));
+  const str30 = dateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29));
+
+  const acc = {};
+  CATS.forEach(c => { acc[c] = { t:0, w:0, m:0 }; });
+
+  loadEntries().forEach(e => {
+    if (!acc[e.cat]) return;
+    // Entrada activa: usa tiempo transcurrido como duración provisional
+    const dur = e.durFinal ? e.dur : (e.date === today ? elapsedH(e.ts) : 0);
+    if (e.date === today)  acc[e.cat].t += dur;
+    if (e.date >= str7)    acc[e.cat].w += dur;
+    if (e.date >= str30)   acc[e.cat].m += dur;
+  });
+
+  let totT=0, totW=0, totM=0;
+  CATS.forEach(c => { totT+=acc[c].t; totW+=acc[c].w; totM+=acc[c].m; });
+
+  document.getElementById('summary-cats').innerHTML = CATS.map(c => {
+    const { t, w, m } = acc[c];
+    const meta = CAT_META[c];
+    return `
+      <tr>
+        <td>
+          <span class="cat-name">
+            <span class="cat-dot" style="background:${meta.dot}"></span>
+            ${escHtml(c)}
+          </span>
+        </td>
+        <td class="${t===0?'zero':''}">${fmtPct(t, totT)}</td>
+        <td class="${w===0?'zero':''}">${fmtPct(w, totW)}</td>
+        <td class="${m===0?'zero':''}">${fmtPct(m, totM)}</td>
+      </tr>`;
+  }).join('');
+}
+
+// ── Navegación ─────────────────────────────────────────────────────────────
+function switchTab(screen, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  btn.classList.add('active');
+  if (screen === 'summary') renderSummary();
+  if (screen === 'log')     renderLog();
+}
+
+// ── Timer en vivo (actualiza cada 30 segundos) ─────────────────────────────
+setInterval(() => {
+  const el = document.getElementById('live-timer');
+  if (!el) return;
+  const entry = getActiveEntry();
+  if (entry) el.textContent = fmtDur(elapsedH(entry.ts));
+}, 30_000);
+
+// ── Limpiar entradas huérfanas de días anteriores ──────────────────────────
+function cleanupStale() {
+  const today = dateStr(new Date());
+  const entries = loadEntries();
+  let changed = false;
+  entries.forEach(e => {
+    if (!e.durFinal && e.date !== today) {
+      e.durFinal = true; // dur queda en 0, no podemos recuperar la hora de fin
+      changed = true;
+    }
+  });
+  if (changed) saveEntries(entries);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(function init() {
+  cleanupStale();
+
+  // Poblar el select de categorías
+  const catEl = document.getElementById('inp-cat');
+  CATS.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    catEl.appendChild(opt);
+  });
+
+  const now = new Date();
+  document.getElementById('today-label').textContent =
+    `${DAYS[now.getDay()]} ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
+
+  renderLog();
+})();
+
+// ── Service Worker ─────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
