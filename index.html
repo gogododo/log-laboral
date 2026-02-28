@@ -444,7 +444,7 @@ const MONTHS = ['enero','febrero','marzo','abril','mayo','junio',
 // ── Storage ────────────────────────────────────────────────────────────────
 function loadEntries() {
   try {
-    const raw = JSON.parse(localStorage.getItem('dailyLog') || '[]');
+    const raw = JSON.parse(localStorage.getItem('laboralLog') || '[]');
     // Migración de formato antiguo: entradas sin durFinal se marcan como finalizadas
     return raw.map(e => ({
       ...e,
@@ -455,21 +455,21 @@ function loadEntries() {
 }
 
 function saveEntries(arr) {
-  localStorage.setItem('dailyLog', JSON.stringify(arr));
+  localStorage.setItem('laboralLog', JSON.stringify(arr));
 }
 
 // ── Estado del trabajo ─────────────────────────────────────────────────────
 function isWorkActive() {
-  if (localStorage.getItem('workActive') !== 'true') return false;
+  if (localStorage.getItem('laboralActive') !== 'true') return false;
   // Sanity check: debe existir una entrada no finalizada de hoy
   const today = dateStr(new Date());
   const ok = loadEntries().some(e => e.date === today && !e.durFinal);
-  if (!ok) { localStorage.setItem('workActive', 'false'); return false; }
+  if (!ok) { localStorage.setItem('laboralActive', 'false'); return false; }
   return true;
 }
 
 function setWorkActive(val) {
-  localStorage.setItem('workActive', val ? 'true' : 'false');
+  localStorage.setItem('laboralActive', val ? 'true' : 'false');
 }
 
 // ── Helpers de fecha / tiempo ──────────────────────────────────────────────
