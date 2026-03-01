@@ -1,4 +1,4 @@
-const CACHE = 'log-diario-v1';
+const CACHE = 'log-laboral-v1';
 const ASSETS = [
   './index.html',
   './manifest.json'
